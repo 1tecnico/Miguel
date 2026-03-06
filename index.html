@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-
 <head>
 <meta charset="UTF-8">
-<title>Mochila Digital</title>
+<title>Mochila Digital Pro</title>
 
 <style>
 
 body{
-font-family:Arial, sans-serif;
+font-family:Arial;
 margin:0;
 background:linear-gradient(135deg,#0a1f44,#142f63);
 color:white;
+transition:0.3s;
+}
+
+.dark{
+background:#111;
 }
 
 header{
 background:#081833;
 padding:15px;
 text-align:center;
-font-size:24px;
+font-size:22px;
 }
 
 #login{
@@ -29,15 +33,15 @@ justify-content:center;
 height:100vh;
 }
 
-input{
-padding:10px;
+input,textarea{
+padding:8px;
 border-radius:6px;
 border:none;
-margin:5px;
+margin:4px;
 }
 
 button{
-padding:10px;
+padding:8px 12px;
 border:none;
 border-radius:6px;
 background:#2d63c8;
@@ -55,79 +59,36 @@ display:none;
 
 nav{
 text-align:center;
-margin-top:10px;
+margin:10px;
 }
 
 nav button{
-margin:5px;
-}
-
-.topbar{
-text-align:center;
-margin:15px;
-}
-
-#pesquisa{
-width:250px;
+margin:4px;
 }
 
 .grid{
 display:grid;
 grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-gap:15px;
+gap:12px;
 padding:20px;
 }
 
 .materia{
 background:#132d63;
-border-radius:12px;
+border-radius:10px;
 padding:10px;
 box-shadow:0 5px 10px rgba(0,0,0,0.4);
 }
 
-.materia h3{
-text-align:center;
-margin:5px;
-cursor:text;
-}
-
-textarea{
-width:100%;
-height:80px;
-border:none;
-border-radius:6px;
-padding:5px;
-resize:none;
-}
-
-/* controle das abas */
-
-#mochila{
-display:block;
-}
-
-#calculadora{
+.section{
 display:none;
+padding:20px;
 text-align:center;
-margin-top:30px;
 }
 
-.calc{
-display:inline-block;
-background:#132d63;
-padding:15px;
-border-radius:10px;
-}
-
-.calc input{
-width:180px;
-margin-bottom:10px;
-text-align:right;
-}
-
-.calc button{
-width:40px;
-margin:3px;
+canvas{
+background:white;
+border-radius:8px;
 }
 
 </style>
@@ -135,33 +96,32 @@ margin:3px;
 
 <body>
 
-<!-- LOGIN -->
-
 <div id="login">
 <h2>🔒 Mochila Digital</h2>
-<input type="password" id="senha" placeholder="Digite a senha">
+<input type="password" id="senha">
 <button onclick="entrar()">Entrar</button>
 <p id="erro"></p>
 </div>
 
-<!-- APP -->
-
 <div id="app">
 
-<header>🎒 Minha Mochila Escolar</header>
+<header>🎒 Mochila Escolar</header>
 
 <nav>
 <button onclick="mostrar('mochila')">📚 Mochila</button>
 <button onclick="mostrar('calculadora')">🧮 Calculadora</button>
+<button onclick="mostrar('provas')">📅 Provas</button>
+<button onclick="mostrar('notas')">📊 Notas</button>
+<button onclick="mostrar('estudo')">🧠 Estudo</button>
+<button onclick="mostrar('arquivos')">📂 Arquivos</button>
+<button onclick="modo()">🌙 Modo</button>
 </nav>
 
 <!-- MOCHILA -->
 
-<div id="mochila">
+<div id="mochila" class="section">
 
-<div class="topbar">
 <input id="pesquisa" placeholder="Pesquisar matéria..." onkeyup="buscar()">
-</div>
 
 <div class="grid" id="grid"></div>
 
@@ -169,11 +129,9 @@ margin:3px;
 
 <!-- CALCULADORA -->
 
-<div id="calculadora">
+<div id="calculadora" class="section">
 
-<h2>🧮 Calculadora</h2>
-
-<div class="calc">
+<h2>Calculadora</h2>
 
 <input id="display" readonly><br>
 
@@ -197,9 +155,65 @@ margin:3px;
 <button onclick="calcular()">=</button>
 <button onclick="add('+')">+</button><br>
 
-<button onclick="limpar()" style="width:180px">Limpar</button>
+<button onclick="limpar()">Limpar</button>
 
 </div>
+
+<!-- PROVAS -->
+
+<div id="provas" class="section">
+
+<h2>Calendário de Provas</h2>
+
+<input type="date" id="dataProva">
+<input placeholder="Matéria" id="materiaProva">
+
+<button onclick="addProva()">Adicionar</button>
+
+<ul id="listaProvas"></ul>
+
+</div>
+
+<!-- NOTAS -->
+
+<div id="notas" class="section">
+
+<h2>Gráfico de Notas</h2>
+
+<input id="nota" placeholder="Digite nota">
+
+<button onclick="addNota()">Adicionar</button>
+
+<br><br>
+
+<canvas id="grafico" width="400" height="200"></canvas>
+
+</div>
+
+<!-- ESTUDO -->
+
+<div id="estudo" class="section">
+
+<h2>Modo Estudo</h2>
+
+<textarea id="textoEstudo" placeholder="Cole conteúdo aqui"></textarea><br>
+
+<button onclick="gerarResumo()">Resumo</button>
+<button onclick="gerarPergunta()">Pergunta</button>
+
+<p id="resultado"></p>
+
+</div>
+
+<!-- ARQUIVOS -->
+
+<div id="arquivos" class="section">
+
+<h2>Arquivos</h2>
+
+<input type="file" id="fileInput">
+
+<ul id="listaArquivos"></ul>
 
 </div>
 
@@ -216,74 +230,75 @@ function entrar(){
 let s=document.getElementById("senha").value
 
 if(s===senhaCorreta){
-document.getElementById("login").style.display="none"
-document.getElementById("app").style.display="block"
+login.style.display="none"
+app.style.display="block"
+mostrar("mochila")
 }else{
-document.getElementById("erro").innerText="Senha incorreta"
+erro.innerText="Senha incorreta"
 }
 
 }
 
-/* NAVEGAÇÃO ENTRE ABAS */
+/* NAVEGAÇÃO */
 
 function mostrar(sec){
 
-document.getElementById("mochila").style.display="none"
-document.getElementById("calculadora").style.display="none"
+document.querySelectorAll(".section").forEach(s=>{
+s.style.display="none"
+})
 
 document.getElementById(sec).style.display="block"
 
 }
 
-/* CRIAÇÃO DAS 21 MATÉRIAS */
+/* MODO ESCURO */
+
+function modo(){
+
+document.body.classList.toggle("dark")
+
+}
+
+/* MATÉRIAS */
 
 let grid=document.getElementById("grid")
 
 for(let i=1;i<=21;i++){
 
 let nome=localStorage.getItem("nome"+i)||("Matéria "+i)
-let conteudo=localStorage.getItem("conteudo"+i)||""
+let texto=localStorage.getItem("conteudo"+i)||""
 
 let div=document.createElement("div")
 div.className="materia"
 
 div.innerHTML=`
 <h3 contenteditable oninput="salvarNome(${i},this)">${nome}</h3>
-<textarea oninput="salvarTexto(${i},this)">${conteudo}</textarea>
+<textarea oninput="salvarTexto(${i},this)">${texto}</textarea>
 `
 
 grid.appendChild(div)
 
 }
 
-/* SALVAR NOME */
-
-function salvarNome(i,el){
-localStorage.setItem("nome"+i,el.innerText)
+function salvarNome(i,e){
+localStorage.setItem("nome"+i,e.innerText)
 }
 
-/* SALVAR CONTEÚDO */
-
-function salvarTexto(i,el){
-localStorage.setItem("conteudo"+i,el.value)
+function salvarTexto(i,e){
+localStorage.setItem("conteudo"+i,e.value)
 }
 
 /* PESQUISA */
 
 function buscar(){
 
-let termo=document.getElementById("pesquisa").value.toLowerCase()
-let materias=document.querySelectorAll(".materia")
+let termo=pesquisa.value.toLowerCase()
 
-materias.forEach(m=>{
+document.querySelectorAll(".materia").forEach(m=>{
 
 let nome=m.querySelector("h3").innerText.toLowerCase()
 
-if(nome.includes(termo)){
-m.style.display="block"
-}else{
-m.style.display="none"
-}
+m.style.display=nome.includes(termo)?"block":"none"
 
 })
 
@@ -292,30 +307,113 @@ m.style.display="none"
 /* CALCULADORA */
 
 function add(v){
-document.getElementById("display").value+=v
+display.value+=v
 }
 
 function calcular(){
 
-let exp=document.getElementById("display").value
-
-try{
+let exp=display.value
 
 if(exp==="") return
 
-document.getElementById("display").value=eval(exp)
-
+try{
+display.value=eval(exp)
 }catch{
-
-document.getElementById("display").value="Erro"
-
+display.value="Erro"
 }
 
 }
 
 function limpar(){
-document.getElementById("display").value=""
+display.value=""
 }
+
+/* PROVAS */
+
+function addProva(){
+
+let data=dataProva.value
+let mat=materiaProva.value
+
+if(!data||!mat) return
+
+let li=document.createElement("li")
+li.innerText=data+" - "+mat
+
+listaProvas.appendChild(li)
+
+}
+
+/* NOTAS */
+
+let notas=[]
+let ctx=document.getElementById("grafico").getContext("2d")
+
+function addNota(){
+
+let n=parseFloat(nota.value)
+
+if(isNaN(n)) return
+
+notas.push(n)
+
+desenharGrafico()
+
+}
+
+function desenharGrafico(){
+
+ctx.clearRect(0,0,400,200)
+
+notas.forEach((n,i)=>{
+
+let x=i*40+20
+let h=n*15
+
+ctx.fillStyle="blue"
+ctx.fillRect(x,200-h,30,h)
+
+})
+
+}
+
+/* ESTUDO */
+
+function gerarResumo(){
+
+let texto=textoEstudo.value
+
+let frases=texto.split(".")
+
+resultado.innerText=frases.slice(0,2).join(".")+"."
+
+}
+
+function gerarPergunta(){
+
+let palavras=textoEstudo.value.split(" ")
+
+let chave=palavras[Math.floor(Math.random()*palavras.length)]
+
+resultado.innerText="Explique: "+chave
+
+}
+
+/* ARQUIVOS */
+
+fileInput.addEventListener("change",function(){
+
+let file=this.files[0]
+
+if(!file) return
+
+let li=document.createElement("li")
+
+li.innerText=file.name
+
+listaArquivos.appendChild(li)
+
+})
 
 </script>
 
