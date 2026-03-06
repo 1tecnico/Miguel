@@ -1,105 +1,236 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Imóveis à Venda</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f2f2f2;
-    }
-    header {
-      background-color: #004aad;
-      color: white;
-      padding: 20px;
-      text-align: center;
-    }
-    .container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin: 20px;
-    }
-    .card {
-      background-color: white;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      width: 300px;
-      margin: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
-    .card img {
-      width: 100%;
-      border-top-left-radius: 8px;
-      border-top-right-radius: 8px;
-    }
-    .card-content {
-      padding: 15px;
-    }
-    .card-content h3 {
-      margin: 0 0 10px 0;
-      font-size: 18px;
-    }
-    .card-content p {
-      margin: 5px 0;
-      color: #555;
-    }
-    footer {
-      background-color: #004aad;
-      color: white;
-      text-align: center;
-      padding: 10px;
-      position: relative;
-      bottom: 0;
-      width: 100%;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Mochila Escolar Digital</title>
+
+<style>
+
+body{
+font-family: Arial;
+background:#eef2f7;
+margin:0;
+}
+
+header{
+background:#2d5aa0;
+color:white;
+text-align:center;
+padding:20px;
+}
+
+.container{
+padding:20px;
+max-width:900px;
+margin:auto;
+}
+
+.addMateria{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+
+input{
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+flex:1;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:6px;
+background:#2d5aa0;
+color:white;
+cursor:pointer;
+}
+
+button:hover{
+background:#1f4175;
+}
+
+.materia{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.materia h2{
+display:flex;
+justify-content:space-between;
+align-items:center;
+}
+
+ul{
+list-style:none;
+padding:0;
+}
+
+li{
+display:flex;
+justify-content:space-between;
+padding:6px;
+border-bottom:1px solid #eee;
+}
+
+.concluida{
+text-decoration:line-through;
+color:gray;
+}
+
+.tarefaAdd{
+display:flex;
+gap:10px;
+margin-top:10px;
+}
+
+.deleteBtn{
+background:red;
+}
+
+</style>
+
 </head>
+
 <body>
 
-  <header>
-    <h1>Imóveis à Venda</h1>
-    <p>Encontre o lar dos seus sonhos</p>
-  </header>
+<header>
+<h1>🎒 Minha Mochila Escolar</h1>
+<p>Organize suas matérias e tarefas</p>
+</header>
 
-  <div class="container">
-    <div class="card">
-      <img src="https://via.placeholder.com/300x200" alt="Casa 1">
-      <div class="card-content">
-        <h3>Casa com 3 Quartos</h3>
-        <p>Localização: São Paulo, SP</p>
-        <p>Preço: R$ 550.000</p>
-      </div>
-    </div>
+<div class="container">
 
-    <div class="card">
-      <img src="https://via.placeholder.com/300x200" alt="Apartamento">
-      <div class="card-content">
-        <h3>Apartamento Moderno</h3>
-        <p>Localização: Curitiba, PR</p>
-        <p>Preço: R$ 420.000</p>
-      </div>
-    </div>
+<div class="addMateria">
+<input id="novaMateria" placeholder="Nova matéria">
+<button onclick="addMateria()">Adicionar</button>
+</div>
 
-    <div class="card">
-      <img src="https://via.placeholder.com/300x200" alt="Casa 2">
-      <div class="card-content">
-        <h3>Casa com Piscina</h3>
-        <p>Localização: Salvador, BA</p>
-        <p>Preço: R$ 750.000</p>
-      </div>
-    </div>
-  </div>
+<div id="materias"></div>
 
-  <footer>
-    <p>&copy; 2025 Imóveis à Venda. Todos os direitos reservados.</p>
-  </footer>
+</div>
+
+<script>
+
+let dados = JSON.parse(localStorage.getItem("mochila")) || {
+"Português":[],
+"Matemática":[],
+"História":[],
+"Geografia":[],
+"Ciências":[],
+"Inglês":[],
+"Artes":[],
+"Educação Física":[]
+}
+
+function salvar(){
+localStorage.setItem("mochila",JSON.stringify(dados))
+}
+
+function render(){
+
+const area = document.getElementById("materias")
+area.innerHTML=""
+
+for(let materia in dados){
+
+let tarefas = dados[materia]
+
+let div = document.createElement("div")
+div.className="materia"
+
+div.innerHTML = `
+<h2>
+${materia}
+<button class="deleteBtn" onclick="deleteMateria('${materia}')">Excluir</button>
+</h2>
+
+<ul>
+${tarefas.map((t,i)=>`
+<li class="${t.done ? 'concluida':''}">
+<span onclick="toggle('${materia}',${i})">${t.nome}</span>
+<button onclick="deleteTarefa('${materia}',${i})">❌</button>
+</li>
+`).join("")}
+</ul>
+
+<div class="tarefaAdd">
+<input id="input-${materia}" placeholder="Nova tarefa">
+<button onclick="addTarefa('${materia}')">Adicionar</button>
+</div>
+`
+
+area.appendChild(div)
+
+}
+
+salvar()
+
+}
+
+function addMateria(){
+
+let nome = document.getElementById("novaMateria").value
+
+if(nome && !dados[nome]){
+
+dados[nome]=[]
+document.getElementById("novaMateria").value=""
+render()
+
+}
+
+}
+
+function deleteMateria(materia){
+
+if(confirm("Excluir matéria?")){
+
+delete dados[materia]
+render()
+
+}
+
+}
+
+function addTarefa(materia){
+
+let input = document.getElementById(`input-${materia}`)
+let texto = input.value
+
+if(texto){
+
+dados[materia].push({nome:texto,done:false})
+input.value=""
+render()
+
+}
+
+}
+
+function deleteTarefa(materia,index){
+
+dados[materia].splice(index,1)
+render()
+
+}
+
+function toggle(materia,index){
+
+dados[materia][index].done = !dados[materia][index].done
+render()
+
+}
+
+render()
+
+</script>
 
 </body>
-   <p style="text-align: center; margin-bottom: 40px;">
-        <a href="miguel Rodrigues.odt" download>CLIQUE AQUI PARA BAIXAR</a>
-    </p>
 </html>
