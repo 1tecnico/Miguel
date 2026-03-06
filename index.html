@@ -1,234 +1,321 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>Mochila Escolar Digital</title>
+<title>Mochila Digital</title>
 
 <style>
 
 body{
-font-family: Arial;
-background:#eef2f7;
+font-family:Arial, sans-serif;
 margin:0;
+background:linear-gradient(135deg,#0a1f44,#142f63);
+color:white;
 }
 
 header{
-background:#2d5aa0;
-color:white;
+background:#081833;
+padding:15px;
 text-align:center;
-padding:20px;
+font-size:24px;
 }
 
-.container{
-padding:20px;
-max-width:900px;
-margin:auto;
-}
-
-.addMateria{
+#login{
 display:flex;
-gap:10px;
-margin-bottom:20px;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+height:100vh;
 }
 
 input{
 padding:10px;
 border-radius:6px;
-border:1px solid #ccc;
-flex:1;
+border:none;
+margin:5px;
 }
 
 button{
 padding:10px;
 border:none;
 border-radius:6px;
-background:#2d5aa0;
+background:#2d63c8;
 color:white;
 cursor:pointer;
 }
 
 button:hover{
-background:#1f4175;
+background:#3f7ae6;
 }
 
-.materia{
-background:white;
-padding:15px;
-margin-bottom:15px;
-border-radius:10px;
-box-shadow:0 2px 6px rgba(0,0,0,0.1);
+#app{
+display:none;
 }
 
-.materia h2{
-display:flex;
-justify-content:space-between;
-align-items:center;
-}
-
-ul{
-list-style:none;
-padding:0;
-}
-
-li{
-display:flex;
-justify-content:space-between;
-padding:6px;
-border-bottom:1px solid #eee;
-}
-
-.concluida{
-text-decoration:line-through;
-color:gray;
-}
-
-.tarefaAdd{
-display:flex;
-gap:10px;
+nav{
+text-align:center;
 margin-top:10px;
 }
 
-.deleteBtn{
-background:red;
+nav button{
+margin:5px;
+}
+
+.topbar{
+text-align:center;
+margin:15px;
+}
+
+#pesquisa{
+width:250px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+padding:20px;
+}
+
+.materia{
+background:#132d63;
+border-radius:12px;
+padding:10px;
+box-shadow:0 5px 10px rgba(0,0,0,0.4);
+}
+
+.materia h3{
+text-align:center;
+margin:5px;
+cursor:text;
+}
+
+textarea{
+width:100%;
+height:80px;
+border:none;
+border-radius:6px;
+padding:5px;
+resize:none;
+}
+
+/* controle das abas */
+
+#mochila{
+display:block;
+}
+
+#calculadora{
+display:none;
+text-align:center;
+margin-top:30px;
+}
+
+.calc{
+display:inline-block;
+background:#132d63;
+padding:15px;
+border-radius:10px;
+}
+
+.calc input{
+width:180px;
+margin-bottom:10px;
+text-align:right;
+}
+
+.calc button{
+width:40px;
+margin:3px;
 }
 
 </style>
-
 </head>
 
 <body>
 
-<header>
-<h1>🎒 Minha Mochila Escolar</h1>
-<p>Organize suas matérias e tarefas</p>
-</header>
+<!-- LOGIN -->
 
-<div class="container">
-
-<div class="addMateria">
-<input id="novaMateria" placeholder="Nova matéria">
-<button onclick="addMateria()">Adicionar</button>
+<div id="login">
+<h2>🔒 Mochila Digital</h2>
+<input type="password" id="senha" placeholder="Digite a senha">
+<button onclick="entrar()">Entrar</button>
+<p id="erro"></p>
 </div>
 
-<div id="materias"></div>
+<!-- APP -->
+
+<div id="app">
+
+<header>🎒 Minha Mochila Escolar</header>
+
+<nav>
+<button onclick="mostrar('mochila')">📚 Mochila</button>
+<button onclick="mostrar('calculadora')">🧮 Calculadora</button>
+</nav>
+
+<!-- MOCHILA -->
+
+<div id="mochila">
+
+<div class="topbar">
+<input id="pesquisa" placeholder="Pesquisar matéria..." onkeyup="buscar()">
+</div>
+
+<div class="grid" id="grid"></div>
+
+</div>
+
+<!-- CALCULADORA -->
+
+<div id="calculadora">
+
+<h2>🧮 Calculadora</h2>
+
+<div class="calc">
+
+<input id="display" readonly><br>
+
+<button onclick="add('7')">7</button>
+<button onclick="add('8')">8</button>
+<button onclick="add('9')">9</button>
+<button onclick="add('/')">/</button><br>
+
+<button onclick="add('4')">4</button>
+<button onclick="add('5')">5</button>
+<button onclick="add('6')">6</button>
+<button onclick="add('*')">*</button><br>
+
+<button onclick="add('1')">1</button>
+<button onclick="add('2')">2</button>
+<button onclick="add('3')">3</button>
+<button onclick="add('-')">-</button><br>
+
+<button onclick="add('0')">0</button>
+<button onclick="add('.')">.</button>
+<button onclick="calcular()">=</button>
+<button onclick="add('+')">+</button><br>
+
+<button onclick="limpar()" style="width:180px">Limpar</button>
+
+</div>
+
+</div>
 
 </div>
 
 <script>
 
-let dados = JSON.parse(localStorage.getItem("mochila")) || {
-"Português":[],
-"Matemática":[],
-"História":[],
-"Geografia":[],
-"Ciências":[],
-"Inglês":[],
-"Artes":[],
-"Educação Física":[]
+/* SENHA */
+
+let senhaCorreta="244m"
+
+function entrar(){
+
+let s=document.getElementById("senha").value
+
+if(s===senhaCorreta){
+document.getElementById("login").style.display="none"
+document.getElementById("app").style.display="block"
+}else{
+document.getElementById("erro").innerText="Senha incorreta"
 }
 
-function salvar(){
-localStorage.setItem("mochila",JSON.stringify(dados))
 }
 
-function render(){
+/* NAVEGAÇÃO ENTRE ABAS */
 
-const area = document.getElementById("materias")
-area.innerHTML=""
+function mostrar(sec){
 
-for(let materia in dados){
+document.getElementById("mochila").style.display="none"
+document.getElementById("calculadora").style.display="none"
 
-let tarefas = dados[materia]
+document.getElementById(sec).style.display="block"
 
-let div = document.createElement("div")
+}
+
+/* CRIAÇÃO DAS 21 MATÉRIAS */
+
+let grid=document.getElementById("grid")
+
+for(let i=1;i<=21;i++){
+
+let nome=localStorage.getItem("nome"+i)||("Matéria "+i)
+let conteudo=localStorage.getItem("conteudo"+i)||""
+
+let div=document.createElement("div")
 div.className="materia"
 
-div.innerHTML = `
-<h2>
-${materia}
-<button class="deleteBtn" onclick="deleteMateria('${materia}')">Excluir</button>
-</h2>
-
-<ul>
-${tarefas.map((t,i)=>`
-<li class="${t.done ? 'concluida':''}">
-<span onclick="toggle('${materia}',${i})">${t.nome}</span>
-<button onclick="deleteTarefa('${materia}',${i})">❌</button>
-</li>
-`).join("")}
-</ul>
-
-<div class="tarefaAdd">
-<input id="input-${materia}" placeholder="Nova tarefa">
-<button onclick="addTarefa('${materia}')">Adicionar</button>
-</div>
+div.innerHTML=`
+<h3 contenteditable oninput="salvarNome(${i},this)">${nome}</h3>
+<textarea oninput="salvarTexto(${i},this)">${conteudo}</textarea>
 `
 
-area.appendChild(div)
+grid.appendChild(div)
 
 }
 
-salvar()
+/* SALVAR NOME */
+
+function salvarNome(i,el){
+localStorage.setItem("nome"+i,el.innerText)
+}
+
+/* SALVAR CONTEÚDO */
+
+function salvarTexto(i,el){
+localStorage.setItem("conteudo"+i,el.value)
+}
+
+/* PESQUISA */
+
+function buscar(){
+
+let termo=document.getElementById("pesquisa").value.toLowerCase()
+let materias=document.querySelectorAll(".materia")
+
+materias.forEach(m=>{
+
+let nome=m.querySelector("h3").innerText.toLowerCase()
+
+if(nome.includes(termo)){
+m.style.display="block"
+}else{
+m.style.display="none"
+}
+
+})
 
 }
 
-function addMateria(){
+/* CALCULADORA */
 
-let nome = document.getElementById("novaMateria").value
+function add(v){
+document.getElementById("display").value+=v
+}
 
-if(nome && !dados[nome]){
+function calcular(){
 
-dados[nome]=[]
-document.getElementById("novaMateria").value=""
-render()
+let exp=document.getElementById("display").value
+
+try{
+
+if(exp==="") return
+
+document.getElementById("display").value=eval(exp)
+
+}catch{
+
+document.getElementById("display").value="Erro"
 
 }
 
 }
 
-function deleteMateria(materia){
-
-if(confirm("Excluir matéria?")){
-
-delete dados[materia]
-render()
-
+function limpar(){
+document.getElementById("display").value=""
 }
-
-}
-
-function addTarefa(materia){
-
-let input = document.getElementById(`input-${materia}`)
-let texto = input.value
-
-if(texto){
-
-dados[materia].push({nome:texto,done:false})
-input.value=""
-render()
-
-}
-
-}
-
-function deleteTarefa(materia,index){
-
-dados[materia].splice(index,1)
-render()
-
-}
-
-function toggle(materia,index){
-
-dados[materia][index].done = !dados[materia][index].done
-render()
-
-}
-
-render()
 
 </script>
 
