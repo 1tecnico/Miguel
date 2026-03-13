@@ -11,11 +11,6 @@ font-family:Arial;
 margin:0;
 background:linear-gradient(135deg,#0a1f44,#142f63);
 color:white;
-transition:0.3s;
-}
-
-.dark{
-background:#111;
 }
 
 header{
@@ -80,24 +75,16 @@ padding:12px;
 box-shadow:0 5px 10px rgba(0,0,0,0.4);
 }
 
-/* espaço maior para anotações */
-
 textarea{
 width:100%;
 height:180px;
 resize:vertical;
-font-size:14px;
 }
 
 .section{
 display:none;
 padding:20px;
 text-align:center;
-}
-
-canvas{
-background:white;
-border-radius:8px;
 }
 
 </style>
@@ -122,7 +109,6 @@ border-radius:8px;
 <button onclick="mostrar('notas')">📊 Notas</button>
 <button onclick="mostrar('estudo')">🧠 Estudo</button>
 <button onclick="mostrar('arquivos')">📂 Arquivos</button>
-<button onclick="modo()">🌙 Modo</button>
 </nav>
 
 <!-- MOCHILA -->
@@ -130,6 +116,11 @@ border-radius:8px;
 <div id="mochila" class="section">
 
 <input id="pesquisa" placeholder="Pesquisar matéria..." onkeyup="buscar()">
+
+<br><br>
+
+<input id="novaMateria" placeholder="Nome da nova matéria">
+<button onclick="criarMateria()">Adicionar Matéria</button>
 
 <div class="grid" id="grid"></div>
 
@@ -172,7 +163,7 @@ border-radius:8px;
 
 <h2>Modo Estudo</h2>
 
-<textarea id="textoEstudo" placeholder="Cole conteúdo aqui"></textarea><br>
+<textarea id="textoEstudo"></textarea><br>
 
 <button onclick="gerarResumo()">Resumo</button>
 <button onclick="gerarPergunta()">Pergunta</button>
@@ -203,9 +194,7 @@ let senhaCorreta="244m"
 
 function entrar(){
 
-let s=document.getElementById("senha").value
-
-if(s===senhaCorreta){
+if(senha.value===senhaCorreta){
 login.style.display="none"
 app.style.display="block"
 mostrar("mochila")
@@ -227,17 +216,26 @@ document.getElementById(sec).style.display="block"
 
 }
 
-/* MODO ESCURO */
-
-function modo(){
-document.body.classList.toggle("dark")
-}
-
 /* MATÉRIAS */
 
 let grid=document.getElementById("grid")
 
-for(let i=1;i<=21;i++){
+let totalMaterias=localStorage.getItem("totalMaterias")
+
+if(!totalMaterias){
+totalMaterias=21
+localStorage.setItem("totalMaterias",21)
+}
+
+totalMaterias=parseInt(totalMaterias)
+
+for(let i=1;i<=totalMaterias;i++){
+
+criarMateriaHTML(i)
+
+}
+
+function criarMateriaHTML(i){
 
 let nome=localStorage.getItem("nome"+i)||("Matéria "+i)
 let texto=localStorage.getItem("conteudo"+i)||""
@@ -253,6 +251,27 @@ div.innerHTML=`
 grid.appendChild(div)
 
 }
+
+/* CRIAR NOVA MATÉRIA */
+
+function criarMateria(){
+
+let nome=novaMateria.value.trim()
+
+if(nome==="") return
+
+totalMaterias++
+
+localStorage.setItem("totalMaterias",totalMaterias)
+localStorage.setItem("nome"+totalMaterias,nome)
+
+criarMateriaHTML(totalMaterias)
+
+novaMateria.value=""
+
+}
+
+/* SALVAR */
 
 function salvarNome(i,e){
 localStorage.setItem("nome"+i,e.innerText)
@@ -297,7 +316,7 @@ listaProvas.appendChild(li)
 /* NOTAS */
 
 let notas=[]
-let ctx=document.getElementById("grafico").getContext("2d")
+let ctx=grafico.getContext("2d")
 
 function addNota(){
 
@@ -331,9 +350,7 @@ ctx.fillRect(x,200-h,30,h)
 
 function gerarResumo(){
 
-let texto=textoEstudo.value
-
-let frases=texto.split(".")
+let frases=textoEstudo.value.split(".")
 
 resultado.innerText=frases.slice(0,2).join(".")+"."
 
