@@ -36,7 +36,7 @@ margin:4px;
 }
 
 button{
-padding:8px 12px;
+padding:6px 10px;
 border:none;
 border-radius:6px;
 background:#2d63c8;
@@ -75,9 +75,16 @@ padding:12px;
 box-shadow:0 5px 10px rgba(0,0,0,0.4);
 }
 
+.conteudo{
+background:#0f2550;
+padding:8px;
+border-radius:6px;
+margin-top:8px;
+}
+
 textarea{
 width:100%;
-height:180px;
+height:80px;
 resize:vertical;
 }
 
@@ -107,7 +114,6 @@ text-align:center;
 <button onclick="mostrar('mochila')">📚 Mochila</button>
 <button onclick="mostrar('provas')">📅 Provas</button>
 <button onclick="mostrar('notas')">📊 Notas</button>
-<button onclick="mostrar('estudo')">🧠 Estudo</button>
 <button onclick="mostrar('arquivos')">📂 Arquivos</button>
 </nav>
 
@@ -154,21 +160,6 @@ text-align:center;
 <br><br>
 
 <canvas id="grafico" width="400" height="200"></canvas>
-
-</div>
-
-<!-- ESTUDO -->
-
-<div id="estudo" class="section">
-
-<h2>Modo Estudo</h2>
-
-<textarea id="textoEstudo"></textarea><br>
-
-<button onclick="gerarResumo()">Resumo</button>
-<button onclick="gerarPergunta()">Pergunta</button>
-
-<p id="resultado"></p>
 
 </div>
 
@@ -230,34 +221,40 @@ localStorage.setItem("totalMaterias",21)
 totalMaterias=parseInt(totalMaterias)
 
 for(let i=1;i<=totalMaterias;i++){
-
 criarMateriaHTML(i)
-
 }
 
 function criarMateriaHTML(i){
 
 let nome=localStorage.getItem("nome"+i)||("Matéria "+i)
-let texto=localStorage.getItem("conteudo"+i)||""
 
 let div=document.createElement("div")
 div.className="materia"
 
 div.innerHTML=`
 <h3 contenteditable oninput="salvarNome(${i},this)">${nome}</h3>
-<textarea oninput="salvarTexto(${i},this)">${texto}</textarea>
+
+<button onclick="addConteudo(${i})">➕ Adicionar conteúdo</button>
+
+<div id="conteudos${i}"></div>
 `
 
 grid.appendChild(div)
 
+/* carregar conteúdos salvos */
+let lista=JSON.parse(localStorage.getItem("conteudos"+i) || "[]")
+
+lista.forEach((texto,index)=>{
+criarBloco(i,texto,index)
+})
+
 }
 
-/* CRIAR NOVA MATÉRIA */
+/* NOVA MATÉRIA */
 
 function criarMateria(){
 
 let nome=novaMateria.value.trim()
-
 if(nome==="") return
 
 totalMaterias++
@@ -268,17 +265,64 @@ localStorage.setItem("nome"+totalMaterias,nome)
 criarMateriaHTML(totalMaterias)
 
 novaMateria.value=""
-
 }
 
-/* SALVAR */
+/* SALVAR NOME */
 
 function salvarNome(i,e){
 localStorage.setItem("nome"+i,e.innerText)
 }
 
-function salvarTexto(i,e){
-localStorage.setItem("conteudo"+i,e.value)
+/* CONTEÚDOS */
+
+function addConteudo(i){
+
+let lista=JSON.parse(localStorage.getItem("conteudos"+i) || "[]")
+
+lista.push("")
+
+localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+
+criarBloco(i,"",lista.length-1)
+
+}
+
+function criarBloco(i,texto,index){
+
+let container=document.getElementById("conteudos"+i)
+
+let div=document.createElement("div")
+div.className="conteudo"
+
+div.innerHTML=`
+<textarea oninput="salvarConteudo(${i},${index},this)">${texto}</textarea>
+<button onclick="removerConteudo(${i},${index},this)">❌</button>
+`
+
+container.appendChild(div)
+
+}
+
+function salvarConteudo(i,index,el){
+
+let lista=JSON.parse(localStorage.getItem("conteudos"+i) || "[]")
+
+lista[index]=el.value
+
+localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+
+}
+
+function removerConteudo(i,index,btn){
+
+let lista=JSON.parse(localStorage.getItem("conteudos"+i) || "[]")
+
+lista.splice(index,1)
+
+localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+
+btn.parentElement.remove()
+
 }
 
 /* PESQUISA */
@@ -301,13 +345,10 @@ m.style.display=nome.includes(termo)?"block":"none"
 
 function addProva(){
 
-let data=dataProva.value
-let mat=materiaProva.value
-
-if(!data||!mat) return
+if(!dataProva.value||!materiaProva.value) return
 
 let li=document.createElement("li")
-li.innerText=data+" - "+mat
+li.innerText=dataProva.value+" - "+materiaProva.value
 
 listaProvas.appendChild(li)
 
@@ -321,48 +362,15 @@ let ctx=grafico.getContext("2d")
 function addNota(){
 
 let n=parseFloat(nota.value)
-
 if(isNaN(n)) return
 
 notas.push(n)
 
-desenharGrafico()
-
-}
-
-function desenharGrafico(){
-
 ctx.clearRect(0,0,400,200)
 
 notas.forEach((n,i)=>{
-
-let x=i*40+20
-let h=n*15
-
-ctx.fillStyle="blue"
-ctx.fillRect(x,200-h,30,h)
-
+ctx.fillRect(i*40+20,200-n*15,30,n*15)
 })
-
-}
-
-/* ESTUDO */
-
-function gerarResumo(){
-
-let frases=textoEstudo.value.split(".")
-
-resultado.innerText=frases.slice(0,2).join(".")+"."
-
-}
-
-function gerarPergunta(){
-
-let palavras=textoEstudo.value.split(" ")
-
-let chave=palavras[Math.floor(Math.random()*palavras.length)]
-
-resultado.innerText="Explique: "+chave
 
 }
 
@@ -371,7 +379,6 @@ resultado.innerText="Explique: "+chave
 fileInput.addEventListener("change",function(){
 
 let file=this.files[0]
-
 if(!file) return
 
 let li=document.createElement("li")
