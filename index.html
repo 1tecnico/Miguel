@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Mochila Digital - Modal</title>
+<title>Mochila Digital - Jogos</title>
 
 <style>
 body{
@@ -134,6 +134,27 @@ nav button{
 .modal-buttons button{
   margin-left:6px;
 }
+
+/* JOGOS */
+.jogo-card{
+  background:#d4ecff;
+  padding:15px;
+  border-radius:10px;
+  margin:10px;
+  box-shadow:0 3px 6px rgba(0,0,0,0.2);
+  transition:0.2s;
+}
+
+.jogo-card:hover{
+  transform:scale(1.03);
+}
+
+.jogo-card a{
+  color:#1e2a38;
+  text-decoration:none;
+  font-weight:bold;
+}
+
 </style>
 </head>
 
@@ -155,8 +176,10 @@ nav button{
 <button onclick="mostrar('provas')">📅 Provas</button>
 <button onclick="mostrar('notas')">📊 Notas</button>
 <button onclick="mostrar('arquivos')">📂 Arquivos</button>
+<button onclick="mostrar('jogos')">🎮 Jogos</button>
 </nav>
 
+<!-- MOCHILA -->
 <div id="mochila" class="section">
 <input id="pesquisa" placeholder="Pesquisar matéria..." onkeyup="buscar()">
 <br><br>
@@ -165,6 +188,7 @@ nav button{
 <div class="grid" id="grid"></div>
 </div>
 
+<!-- PROVAS -->
 <div id="provas" class="section">
 <h2>Calendário de Provas</h2>
 <input type="date" id="dataProva">
@@ -173,6 +197,7 @@ nav button{
 <ul id="listaProvas"></ul>
 </div>
 
+<!-- NOTAS -->
 <div id="notas" class="section">
 <h2>Gráfico de Notas</h2>
 <input id="nota" placeholder="Digite nota">
@@ -180,10 +205,22 @@ nav button{
 <canvas id="grafico" width="400" height="200"></canvas>
 </div>
 
+<!-- ARQUIVOS -->
 <div id="arquivos" class="section">
 <h2>Arquivos</h2>
 <input type="file" id="fileInput">
 <ul id="listaArquivos"></ul>
+</div>
+
+<!-- JOGOS -->
+<div id="jogos" class="section">
+<h2>🎮 Plataformas de Jogos</h2>
+<div class="grid" id="gridJogos">
+  <div class="jogo-card"><a href="https://www.friv.com/" target="_blank">FRIV</a></div>
+  <div class="jogo-card"><a href="https://www.crazygames.com/" target="_blank">Crazy Games</a></div>
+  <div class="jogo-card"><a href="https://poki.com/" target="_blank">Poki</a></div>
+  <div class="jogo-card"><a href="https://www.miniclip.com/games/en/" target="_blank">Miniclip</a></div>
+</div>
 </div>
 
 <!-- MODAL -->
@@ -239,7 +276,7 @@ function criarMateriaHTML(i){
   renderConteudos(i)
 }
 
-/* CONTEÚDOS - MODO MINIMALISTA COM MODAL */
+/* CONTEÚDOS - MODO MODAL */
 let modal=document.getElementById("modal")
 let modalText=document.getElementById("modalText")
 let modalMateria=0
@@ -347,7 +384,7 @@ fileInput.addEventListener("change",function(){
   li.innerText=file.name
   listaArquivos.appendChild(li)
 })
-</script>
 
+</script>
 </body>
 </html>
