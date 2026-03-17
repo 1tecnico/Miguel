@@ -2,22 +2,23 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Mochila Digital Pro</title>
+<title>Mochila Digital</title>
 
 <style>
 
 body{
 font-family:Arial;
 margin:0;
-background:linear-gradient(135deg,#0a1f44,#142f63);
-color:white;
+background:linear-gradient(135deg,#cfe9ff,#a6d4fa);
+color:#1e2a38;
 }
 
 header{
-background:#081833;
+background:#8ec5f5;
 padding:15px;
 text-align:center;
 font-size:22px;
+color:#0a2540;
 }
 
 #login{
@@ -39,13 +40,13 @@ button{
 padding:6px 10px;
 border:none;
 border-radius:6px;
-background:#2d63c8;
+background:#5aa9e6;
 color:white;
 cursor:pointer;
 }
 
 button:hover{
-background:#3f7ae6;
+background:#3d8ed1;
 }
 
 #app{
@@ -69,14 +70,14 @@ padding:20px;
 }
 
 .materia{
-background:#132d63;
+background:#e3f2fd;
 border-radius:10px;
 padding:12px;
-box-shadow:0 5px 10px rgba(0,0,0,0.4);
+box-shadow:0 3px 8px rgba(0,0,0,0.2);
 }
 
 .conteudo{
-background:#0f2550;
+background:#d4ecff;
 padding:8px;
 border-radius:6px;
 margin-top:8px;
@@ -117,8 +118,6 @@ text-align:center;
 <button onclick="mostrar('arquivos')">📂 Arquivos</button>
 </nav>
 
-<!-- MOCHILA -->
-
 <div id="mochila" class="section">
 
 <input id="pesquisa" placeholder="Pesquisar matéria..." onkeyup="buscar()">
@@ -132,59 +131,40 @@ text-align:center;
 
 </div>
 
-<!-- PROVAS -->
-
 <div id="provas" class="section">
-
 <h2>Calendário de Provas</h2>
 
 <input type="date" id="dataProva">
 <input placeholder="Matéria" id="materiaProva">
-
 <button onclick="addProva()">Adicionar</button>
 
 <ul id="listaProvas"></ul>
-
 </div>
 
-<!-- NOTAS -->
-
 <div id="notas" class="section">
-
 <h2>Gráfico de Notas</h2>
 
 <input id="nota" placeholder="Digite nota">
-
 <button onclick="addNota()">Adicionar</button>
 
-<br><br>
-
 <canvas id="grafico" width="400" height="200"></canvas>
-
 </div>
 
-<!-- ARQUIVOS -->
-
 <div id="arquivos" class="section">
-
 <h2>Arquivos</h2>
-
 <input type="file" id="fileInput">
-
 <ul id="listaArquivos"></ul>
-
 </div>
 
 </div>
 
 <script>
 
-/* SENHA */
+/* LOGIN */
 
 let senhaCorreta="244m"
 
 function entrar(){
-
 if(senha.value===senhaCorreta){
 login.style.display="none"
 app.style.display="block"
@@ -192,33 +172,20 @@ mostrar("mochila")
 }else{
 erro.innerText="Senha incorreta"
 }
-
 }
 
 /* NAVEGAÇÃO */
 
 function mostrar(sec){
-
-document.querySelectorAll(".section").forEach(s=>{
-s.style.display="none"
-})
-
+document.querySelectorAll(".section").forEach(s=>s.style.display="none")
 document.getElementById(sec).style.display="block"
-
 }
 
 /* MATÉRIAS */
 
 let grid=document.getElementById("grid")
 
-let totalMaterias=localStorage.getItem("totalMaterias")
-
-if(!totalMaterias){
-totalMaterias=21
-localStorage.setItem("totalMaterias",21)
-}
-
-totalMaterias=parseInt(totalMaterias)
+let totalMaterias=parseInt(localStorage.getItem("totalMaterias")||21)
 
 for(let i=1;i<=totalMaterias;i++){
 criarMateriaHTML(i)
@@ -233,21 +200,70 @@ div.className="materia"
 
 div.innerHTML=`
 <h3 contenteditable oninput="salvarNome(${i},this)">${nome}</h3>
-
 <button onclick="addConteudo(${i})">➕ Adicionar conteúdo</button>
-
 <div id="conteudos${i}"></div>
 `
 
 grid.appendChild(div)
 
-/* carregar conteúdos salvos */
-let lista=JSON.parse(localStorage.getItem("conteudos"+i) || "[]")
+renderConteudos(i)
+}
+
+/* CONTEÚDOS */
+
+function renderConteudos(i){
+
+let container=document.getElementById("conteudos"+i)
+container.innerHTML=""
+
+let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
 
 lista.forEach((texto,index)=>{
-criarBloco(i,texto,index)
+
+let div=document.createElement("div")
+div.className="conteudo"
+
+div.innerHTML=`
+<textarea oninput="salvarConteudo(${i},${index},this)">${texto}</textarea>
+<button onclick="removerConteudo(${i},${index})">❌</button>
+`
+
+container.appendChild(div)
+
 })
 
+}
+
+function addConteudo(i){
+
+let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
+
+lista.push("")
+
+localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+
+renderConteudos(i)
+}
+
+function salvarConteudo(i,index,el){
+
+let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
+
+lista[index]=el.value
+
+localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+
+}
+
+function removerConteudo(i,index){
+
+let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
+
+lista.splice(index,1)
+
+localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+
+renderConteudos(i)
 }
 
 /* NOVA MATÉRIA */
@@ -267,62 +283,8 @@ criarMateriaHTML(totalMaterias)
 novaMateria.value=""
 }
 
-/* SALVAR NOME */
-
 function salvarNome(i,e){
 localStorage.setItem("nome"+i,e.innerText)
-}
-
-/* CONTEÚDOS */
-
-function addConteudo(i){
-
-let lista=JSON.parse(localStorage.getItem("conteudos"+i) || "[]")
-
-lista.push("")
-
-localStorage.setItem("conteudos"+i,JSON.stringify(lista))
-
-criarBloco(i,"",lista.length-1)
-
-}
-
-function criarBloco(i,texto,index){
-
-let container=document.getElementById("conteudos"+i)
-
-let div=document.createElement("div")
-div.className="conteudo"
-
-div.innerHTML=`
-<textarea oninput="salvarConteudo(${i},${index},this)">${texto}</textarea>
-<button onclick="removerConteudo(${i},${index},this)">❌</button>
-`
-
-container.appendChild(div)
-
-}
-
-function salvarConteudo(i,index,el){
-
-let lista=JSON.parse(localStorage.getItem("conteudos"+i) || "[]")
-
-lista[index]=el.value
-
-localStorage.setItem("conteudos"+i,JSON.stringify(lista))
-
-}
-
-function removerConteudo(i,index,btn){
-
-let lista=JSON.parse(localStorage.getItem("conteudos"+i) || "[]")
-
-lista.splice(index,1)
-
-localStorage.setItem("conteudos"+i,JSON.stringify(lista))
-
-btn.parentElement.remove()
-
 }
 
 /* PESQUISA */
@@ -332,11 +294,8 @@ function buscar(){
 let termo=pesquisa.value.toLowerCase()
 
 document.querySelectorAll(".materia").forEach(m=>{
-
 let nome=m.querySelector("h3").innerText.toLowerCase()
-
 m.style.display=nome.includes(termo)?"block":"none"
-
 })
 
 }
@@ -351,7 +310,6 @@ let li=document.createElement("li")
 li.innerText=dataProva.value+" - "+materiaProva.value
 
 listaProvas.appendChild(li)
-
 }
 
 /* NOTAS */
