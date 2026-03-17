@@ -2,98 +2,138 @@
 <html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<title>Mochila Digital</title>
+<title>Mochila Digital - Modal</title>
 
 <style>
 body{
-font-family:Arial;
-margin:0;
-background:linear-gradient(135deg,#cfe9ff,#a6d4fa);
-color:#1e2a38;
+  font-family:Arial;
+  margin:0;
+  background:linear-gradient(135deg,#cfe9ff,#a6d4fa);
+  color:#1e2a38;
 }
 
 header{
-background:#8ec5f5;
-padding:15px;
-text-align:center;
-font-size:22px;
-color:#0a2540;
+  background:#8ec5f5;
+  padding:15px;
+  text-align:center;
+  font-size:22px;
+  color:#0a2540;
 }
 
 #login{
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  height:100vh;
 }
 
 input,textarea{
-padding:8px;
-border-radius:6px;
-border:none;
-margin:4px;
+  padding:8px;
+  border-radius:6px;
+  border:none;
+  margin:4px;
 }
 
 button{
-padding:6px 10px;
-border:none;
-border-radius:6px;
-background:#5aa9e6;
-color:white;
-cursor:pointer;
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  background:#5aa9e6;
+  color:white;
+  cursor:pointer;
 }
 
 button:hover{
-background:#3d8ed1;
+  background:#3d8ed1;
 }
 
 #app{
-display:none;
+  display:none;
 }
 
 nav{
-text-align:center;
-margin:10px;
+  text-align:center;
+  margin:10px;
 }
 
 nav button{
-margin:4px;
+  margin:4px;
 }
 
 .grid{
-display:grid;
-grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-gap:15px;
-padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:15px;
+  padding:20px;
 }
 
 .materia{
-background:#e3f2fd;
-border-radius:10px;
-padding:12px;
-box-shadow:0 3px 8px rgba(0,0,0,0.2);
+  background:#e3f2fd;
+  border-radius:10px;
+  padding:12px;
+  box-shadow:0 3px 8px rgba(0,0,0,0.2);
 }
 
 .conteudo{
-background:#d4ecff;
-padding:8px;
-border-radius:6px;
-margin-top:8px;
-font-size:14px;
-transition:0.2s;
+  background:#d4ecff;
+  padding:6px 8px;
+  border-radius:6px;
+  margin-top:6px;
+  font-size:14px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  cursor:pointer;
 }
 
-.conteudo:hover{
-transform:scale(1.02);
+.conteudo span{
+  flex:1;
 }
 
 .section{
-display:none;
-padding:20px;
-text-align:center;
+  display:none;
+  padding:20px;
+  text-align:center;
 }
 
+/* MODAL */
+.modal {
+  display:none;
+  position:fixed;
+  z-index:999;
+  left:0;
+  top:0;
+  width:100%;
+  height:100%;
+  overflow:auto;
+  background-color:rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background:#e3f2fd;
+  margin:10% auto;
+  padding:20px;
+  border-radius:10px;
+  width:90%;
+  max-width:500px;
+  color:#1e2a38;
+}
+
+.modal-content textarea{
+  width:100%;
+  height:150px;
+  resize:vertical;
+}
+
+.modal-buttons{
+  margin-top:10px;
+  text-align:right;
+}
+
+.modal-buttons button{
+  margin-left:6px;
+}
 </style>
 </head>
 
@@ -118,16 +158,11 @@ text-align:center;
 </nav>
 
 <div id="mochila" class="section">
-
 <input id="pesquisa" placeholder="Pesquisar matéria..." onkeyup="buscar()">
-
 <br><br>
-
 <input id="novaMateria" placeholder="Nome da nova matéria">
 <button onclick="criarMateria()">Adicionar Matéria</button>
-
 <div class="grid" id="grid"></div>
-
 </div>
 
 <div id="provas" class="section">
@@ -151,6 +186,17 @@ text-align:center;
 <ul id="listaArquivos"></ul>
 </div>
 
+<!-- MODAL -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <textarea id="modalText"></textarea>
+    <div class="modal-buttons">
+      <button onclick="fecharModal()">Salvar</button>
+      <button onclick="excluirModal()">❌ Excluir</button>
+    </div>
+  </div>
+</div>
+
 </div>
 
 <script>
@@ -158,149 +204,149 @@ text-align:center;
 /* LOGIN */
 let senhaCorreta="244m"
 function entrar(){
-if(senha.value===senhaCorreta){
-login.style.display="none"
-app.style.display="block"
-mostrar("mochila")
-}else{
-erro.innerText="Senha incorreta"
-}
+  if(senha.value===senhaCorreta){
+    login.style.display="none"
+    app.style.display="block"
+    mostrar("mochila")
+  }else{
+    erro.innerText="Senha incorreta"
+  }
 }
 
 /* NAVEGAÇÃO */
 function mostrar(sec){
-document.querySelectorAll(".section").forEach(s=>s.style.display="none")
-document.getElementById(sec).style.display="block"
+  document.querySelectorAll(".section").forEach(s=>s.style.display="none")
+  document.getElementById(sec).style.display="block"
 }
 
 /* MATÉRIAS */
 let grid=document.getElementById("grid")
 let totalMaterias=parseInt(localStorage.getItem("totalMaterias")||21)
-
 for(let i=1;i<=totalMaterias;i++){
-criarMateriaHTML(i)
+  criarMateriaHTML(i)
 }
 
 function criarMateriaHTML(i){
-let nome=localStorage.getItem("nome"+i)||("Matéria "+i)
-let div=document.createElement("div")
-div.className="materia"
-div.innerHTML=`
-<h3 contenteditable oninput="salvarNome(${i},this)">${nome}</h3>
-<button onclick="addConteudo(${i})">➕ Adicionar conteúdo</button>
-<div id="conteudos${i}"></div>
-`
-grid.appendChild(div)
-renderConteudos(i)
+  let nome=localStorage.getItem("nome"+i)||("Matéria "+i)
+  let div=document.createElement("div")
+  div.className="materia"
+  div.innerHTML=`
+    <h3 contenteditable oninput="salvarNome(${i},this)">${nome}</h3>
+    <button onclick="addConteudo(${i})">➕ Adicionar conteúdo</button>
+    <div id="conteudos${i}"></div>
+  `
+  grid.appendChild(div)
+  renderConteudos(i)
 }
 
-/* CONTEÚDOS - MODO MINIMALISTA */
-function renderConteudos(i){
-let container=document.getElementById("conteudos"+i)
-container.innerHTML=""
-let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
+/* CONTEÚDOS - MODO MINIMALISTA COM MODAL */
+let modal=document.getElementById("modal")
+let modalText=document.getElementById("modalText")
+let modalMateria=0
+let modalIndex=0
 
-lista.forEach((texto,index)=>{
-let div=document.createElement("div")
-div.className="conteudo"
-let preview = texto.length > 40 ? texto.substring(0,40)+"..." : texto || "Novo conteúdo..."
-div.innerHTML=`
-<div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
-<span onclick="abrirConteudo(${i},${index})">${preview}</span>
-<button onclick="removerConteudo(${i},${index})">❌</button>
-</div>
-<div id="edit${i}_${index}" style="display:none; margin-top:6px;">
-<textarea oninput="salvarConteudo(${i},${index},this)">${texto}</textarea>
-<button onclick="fecharConteudo(${i},${index})">✔️ Fechar</button>
-</div>
-`
-container.appendChild(div)
-})
+function renderConteudos(i){
+  let container=document.getElementById("conteudos"+i)
+  container.innerHTML=""
+  let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
+  lista.forEach((texto,index)=>{
+    let div=document.createElement("div")
+    div.className="conteudo"
+    let preview = texto.length>40?texto.substring(0,40)+"...":texto||"Novo conteúdo..."
+    div.innerHTML=`
+      <span onclick="abrirModal(${i},${index})">${preview}</span>
+      <button onclick="removerConteudo(${i},${index})">❌</button>
+    `
+    container.appendChild(div)
+  })
 }
 
 function addConteudo(i){
-let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
-lista.push("")
-localStorage.setItem("conteudos"+i,JSON.stringify(lista))
-renderConteudos(i)
+  let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
+  lista.push("")
+  localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+  renderConteudos(i)
 }
 
-function salvarConteudo(i,index,el){
-let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
-lista[index]=el.value
-localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+function abrirModal(i,index){
+  modalMateria=i
+  modalIndex=index
+  let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
+  modalText.value=lista[index]
+  modal.style.display="block"
 }
 
-function removerConteudo(i,index){
-let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
-lista.splice(index,1)
-localStorage.setItem("conteudos"+i,JSON.stringify(lista))
-renderConteudos(i)
+function fecharModal(){
+  let lista=JSON.parse(localStorage.getItem("conteudos"+modalMateria)||"[]")
+  lista[modalIndex]=modalText.value
+  localStorage.setItem("conteudos"+modalMateria,JSON.stringify(lista))
+  modal.style.display="none"
+  renderConteudos(modalMateria)
 }
 
-function abrirConteudo(i,index){
-document.getElementById(`edit${i}_${index}`).style.display="block"
+function excluirModal(){
+  let lista=JSON.parse(localStorage.getItem("conteudos"+modalMateria)||"[]")
+  lista.splice(modalIndex,1)
+  localStorage.setItem("conteudos"+modalMateria,JSON.stringify(lista))
+  modal.style.display="none"
+  renderConteudos(modalMateria)
 }
 
-function fecharConteudo(i,index){
-renderConteudos(i)
+/* SALVAR NOME */
+function salvarNome(i,e){
+  localStorage.setItem("nome"+i,e.innerText)
 }
 
 /* NOVA MATÉRIA */
 function criarMateria(){
-let nome=novaMateria.value.trim()
-if(nome==="") return
-totalMaterias++
-localStorage.setItem("totalMaterias",totalMaterias)
-localStorage.setItem("nome"+totalMaterias,nome)
-criarMateriaHTML(totalMaterias)
-novaMateria.value=""
-}
-
-function salvarNome(i,e){
-localStorage.setItem("nome"+i,e.innerText)
+  let nome=novaMateria.value.trim()
+  if(nome==="") return
+  totalMaterias++
+  localStorage.setItem("totalMaterias",totalMaterias)
+  localStorage.setItem("nome"+totalMaterias,nome)
+  criarMateriaHTML(totalMaterias)
+  novaMateria.value=""
 }
 
 /* PESQUISA */
 function buscar(){
-let termo=pesquisa.value.toLowerCase()
-document.querySelectorAll(".materia").forEach(m=>{
-let nome=m.querySelector("h3").innerText.toLowerCase()
-m.style.display=nome.includes(termo)?"block":"none"
-})
+  let termo=pesquisa.value.toLowerCase()
+  document.querySelectorAll(".materia").forEach(m=>{
+    let nome=m.querySelector("h3").innerText.toLowerCase()
+    m.style.display=nome.includes(termo)?"block":"none"
+  })
 }
 
 /* PROVAS */
 function addProva(){
-if(!dataProva.value||!materiaProva.value) return
-let li=document.createElement("li")
-li.innerText=dataProva.value+" - "+materiaProva.value
-listaProvas.appendChild(li)
+  if(!dataProva.value||!materiaProva.value) return
+  let li=document.createElement("li")
+  li.innerText=dataProva.value+" - "+materiaProva.value
+  listaProvas.appendChild(li)
 }
 
 /* NOTAS */
 let notas=[]
 let ctx=grafico.getContext("2d")
 function addNota(){
-let n=parseFloat(nota.value)
-if(isNaN(n)) return
-notas.push(n)
-ctx.clearRect(0,0,400,200)
-notas.forEach((n,i)=>{
-ctx.fillStyle="blue"
-ctx.fillRect(i*40+20,200-n*15,30,n*15)
-})
+  let n=parseFloat(nota.value)
+  if(isNaN(n)) return
+  notas.push(n)
+  ctx.clearRect(0,0,400,200)
+  notas.forEach((n,i)=>{
+    ctx.fillStyle="blue"
+    ctx.fillRect(i*40+20,200-n*15,30,n*15)
+  })
 }
 
 /* ARQUIVOS */
 fileInput.addEventListener("change",function(){
-let file=this.files[0]
-if(!file) return
-let li=document.createElement("li")
-li.innerText=file.name
-listaArquivos.appendChild(li)
+  let file=this.files[0]
+  if(!file) return
+  let li=document.createElement("li")
+  li.innerText=file.name
+  listaArquivos.appendChild(li)
 })
-
 </script>
 
 </body>
