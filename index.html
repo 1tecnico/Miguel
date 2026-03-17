@@ -5,7 +5,6 @@
 <title>Mochila Digital</title>
 
 <style>
-
 body{
 font-family:Arial;
 margin:0;
@@ -81,12 +80,12 @@ background:#d4ecff;
 padding:8px;
 border-radius:6px;
 margin-top:8px;
+font-size:14px;
+transition:0.2s;
 }
 
-textarea{
-width:100%;
-height:80px;
-resize:vertical;
+.conteudo:hover{
+transform:scale(1.02);
 }
 
 .section{
@@ -133,20 +132,16 @@ text-align:center;
 
 <div id="provas" class="section">
 <h2>Calendário de Provas</h2>
-
 <input type="date" id="dataProva">
 <input placeholder="Matéria" id="materiaProva">
 <button onclick="addProva()">Adicionar</button>
-
 <ul id="listaProvas"></ul>
 </div>
 
 <div id="notas" class="section">
 <h2>Gráfico de Notas</h2>
-
 <input id="nota" placeholder="Digite nota">
 <button onclick="addNota()">Adicionar</button>
-
 <canvas id="grafico" width="400" height="200"></canvas>
 </div>
 
@@ -161,9 +156,7 @@ text-align:center;
 <script>
 
 /* LOGIN */
-
 let senhaCorreta="244m"
-
 function entrar(){
 if(senha.value===senhaCorreta){
 login.style.display="none"
@@ -175,16 +168,13 @@ erro.innerText="Senha incorreta"
 }
 
 /* NAVEGAÇÃO */
-
 function mostrar(sec){
 document.querySelectorAll(".section").forEach(s=>s.style.display="none")
 document.getElementById(sec).style.display="block"
 }
 
 /* MATÉRIAS */
-
 let grid=document.getElementById("grid")
-
 let totalMaterias=parseInt(localStorage.getItem("totalMaterias")||21)
 
 for(let i=1;i<=totalMaterias;i++){
@@ -192,94 +182,78 @@ criarMateriaHTML(i)
 }
 
 function criarMateriaHTML(i){
-
 let nome=localStorage.getItem("nome"+i)||("Matéria "+i)
-
 let div=document.createElement("div")
 div.className="materia"
-
 div.innerHTML=`
 <h3 contenteditable oninput="salvarNome(${i},this)">${nome}</h3>
 <button onclick="addConteudo(${i})">➕ Adicionar conteúdo</button>
 <div id="conteudos${i}"></div>
 `
-
 grid.appendChild(div)
-
 renderConteudos(i)
 }
 
-/* CONTEÚDOS */
-
+/* CONTEÚDOS - MODO MINIMALISTA */
 function renderConteudos(i){
-
 let container=document.getElementById("conteudos"+i)
 container.innerHTML=""
-
 let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
 
 lista.forEach((texto,index)=>{
-
 let div=document.createElement("div")
 div.className="conteudo"
-
+let preview = texto.length > 40 ? texto.substring(0,40)+"..." : texto || "Novo conteúdo..."
 div.innerHTML=`
-<textarea oninput="salvarConteudo(${i},${index},this)">${texto}</textarea>
+<div style="display:flex; justify-content:space-between; align-items:center; cursor:pointer;">
+<span onclick="abrirConteudo(${i},${index})">${preview}</span>
 <button onclick="removerConteudo(${i},${index})">❌</button>
+</div>
+<div id="edit${i}_${index}" style="display:none; margin-top:6px;">
+<textarea oninput="salvarConteudo(${i},${index},this)">${texto}</textarea>
+<button onclick="fecharConteudo(${i},${index})">✔️ Fechar</button>
+</div>
 `
-
 container.appendChild(div)
-
 })
-
 }
 
 function addConteudo(i){
-
 let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
-
 lista.push("")
-
 localStorage.setItem("conteudos"+i,JSON.stringify(lista))
-
 renderConteudos(i)
 }
 
 function salvarConteudo(i,index,el){
-
 let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
-
 lista[index]=el.value
-
 localStorage.setItem("conteudos"+i,JSON.stringify(lista))
-
 }
 
 function removerConteudo(i,index){
-
 let lista=JSON.parse(localStorage.getItem("conteudos"+i)||"[]")
-
 lista.splice(index,1)
-
 localStorage.setItem("conteudos"+i,JSON.stringify(lista))
+renderConteudos(i)
+}
 
+function abrirConteudo(i,index){
+document.getElementById(`edit${i}_${index}`).style.display="block"
+}
+
+function fecharConteudo(i,index){
 renderConteudos(i)
 }
 
 /* NOVA MATÉRIA */
-
 function criarMateria(){
-
 let nome=novaMateria.value.trim()
 if(nome==="") return
-
 totalMaterias++
-
 localStorage.setItem("totalMaterias",totalMaterias)
 localStorage.setItem("nome"+totalMaterias,nome)
-
 criarMateriaHTML(totalMaterias)
-
 novaMateria.value=""
 }
 
@@ -288,62 +262,43 @@ localStorage.setItem("nome"+i,e.innerText)
 }
 
 /* PESQUISA */
-
 function buscar(){
-
 let termo=pesquisa.value.toLowerCase()
-
 document.querySelectorAll(".materia").forEach(m=>{
 let nome=m.querySelector("h3").innerText.toLowerCase()
 m.style.display=nome.includes(termo)?"block":"none"
 })
-
 }
 
 /* PROVAS */
-
 function addProva(){
-
 if(!dataProva.value||!materiaProva.value) return
-
 let li=document.createElement("li")
 li.innerText=dataProva.value+" - "+materiaProva.value
-
 listaProvas.appendChild(li)
 }
 
 /* NOTAS */
-
 let notas=[]
 let ctx=grafico.getContext("2d")
-
 function addNota(){
-
 let n=parseFloat(nota.value)
 if(isNaN(n)) return
-
 notas.push(n)
-
 ctx.clearRect(0,0,400,200)
-
 notas.forEach((n,i)=>{
+ctx.fillStyle="blue"
 ctx.fillRect(i*40+20,200-n*15,30,n*15)
 })
-
 }
 
 /* ARQUIVOS */
-
 fileInput.addEventListener("change",function(){
-
 let file=this.files[0]
 if(!file) return
-
 let li=document.createElement("li")
 li.innerText=file.name
-
 listaArquivos.appendChild(li)
-
 })
 
 </script>
